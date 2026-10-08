@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edite seus vídeos com IA | Matheus Kraupp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700;900&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna estreita pensada pro celular (o link chega pelo direct), hero com o log real "voz -> efeito", passos numerados porque a ordem importa. */
+:root {
+  --bg: #0E0D0C;
+  --surface: #181614;
+  --line: #2B2723;
+  --fg: #F2EEE9;
+  --muted: #A1978D;
+  --accent: #D97757;
+  --accent-ink: #0E0D0C;
+  --cyan: #74C4D1;
+  --display: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --body: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #FBFAF8; --surface: #FFFFFF; --line: #E3DED8; --fg: #1A1715; --muted: #6A625A;
+    --accent: #B4552F; --accent-ink: #FFFFFF; --cyan: #1C7684; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #FBFAF8; --surface: #FFFFFF; --line: #E3DED8; --fg: #1A1715; --muted: #6A625A;
+  --accent: #B4552F; --accent-ink: #FFFFFF; --cyan: #1C7684; color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding: 0 20px; -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 680px; margin: 0 auto; padding-block: 40px 72px; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+
+/* Hero */
+.hero { display: flex; flex-direction: column; gap: 20px; }
+.hero h1 { font-size: clamp(40px, 10vw, 64px); font-weight: 900; line-height: .98; letter-spacing: -.035em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: 19px; color: var(--muted); max-width: 34em; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* Log voz -> efeito (do vídeo real) */
+.log { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-family: var(--mono); font-size: 13px; overflow: hidden; }
+.log-head { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.log-head .rec::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; vertical-align: 1px; animation: blink 1.6s steps(2) infinite; }
+.log ol { list-style: none; margin: 0; padding: 6px 0; }
+.log li { display: grid; grid-template-columns: 52px 1fr; gap: 4px 12px; padding: 9px 14px; }
+.log li + li { border-top: 1px dashed var(--line); }
+.log .t { color: var(--accent); font-variant-numeric: tabular-nums; }
+.log .said { color: var(--fg); min-width: 0; }
+.log .did { grid-column: 2; color: var(--cyan); min-width: 0; }
+.log .did::before { content: "\2192  "; }
+@keyframes blink { 50% { opacity: .25; } }
+
+/* Seções */
+section h2 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.intro { color: var(--muted); }
+
+.need { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.need li { border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.need b { font-weight: 700; }
+.need span { color: var(--muted); font-size: 15px; line-height: 1.45; }
+
+/* Passos */
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; display: flex; flex-direction: column; }
+.step { counter-increment: step; display: grid; grid-template-columns: 44px 1fr; gap: 0 16px; padding-block: 28px; border-top: 1px solid var(--line); }
+.step:last-child { border-bottom: 1px solid var(--line); }
+.step::before { content: counter(step, decimal-leading-zero); font-family: var(--mono); font-size: 14px; color: var(--accent); padding-top: 5px; }
+.step-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.step h3 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
+.step p { color: var(--muted); }
+.step p strong { color: var(--fg); font-weight: 500; }
+.os { display: flex; flex-direction: column; gap: 10px; }
+
+/* Blocos de código / prompt */
+.code { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.code-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 6px 6px 14px; border-bottom: 1px solid var(--line); }
+.code-head .label { font-size: 11px; }
+.copy { font-family: var(--mono); font-size: 12px; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.copy.ok { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+pre { margin: 0; padding: 14px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.6; color: var(--fg); white-space: pre; }
+pre.wrap-text { white-space: pre-wrap; word-break: break-word; }
+.prompt pre { max-height: 420px; overflow-y: auto; }
+
+.tips { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.tips li { padding-left: 22px; position: relative; color: var(--muted); }
+.tips li::before { content: ""; position: absolute; left: 0; top: .72em; width: 10px; height: 1px; background: var(--accent); }
+.tips strong { color: var(--fg); font-weight: 500; }
+
+.points { list-style: none; padding: 0; margin: 0; counter-reset: pt; display: flex; flex-direction: column; }
+.points li { counter-increment: pt; display: grid; grid-template-columns: 32px 1fr; gap: 2px 12px; padding-block: 16px; border-top: 1px solid var(--line); }
+.points li:last-child { border-bottom: 1px solid var(--line); }
+.points li::before { content: counter(pt); grid-row: span 2; font-family: var(--mono); font-size: 14px; color: var(--accent); padding-top: 2px; }
+.points b { font-weight: 700; }
+.points span { color: var(--muted); min-width: 0; }
+.points em { font-style: normal; color: var(--fg); }
+.faq { display: flex; flex-direction: column; }
+.faq details { border-top: 1px solid var(--line); padding-block: 16px; }
+.faq details:last-child { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; font-weight: 500; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--mono); color: var(--accent); }
+.faq details[open] summary::after { content: "\2212"; }
+.faq details p { color: var(--muted); padding-top: 10px; }
+
+footer { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 24px; }
+footer p { color: var(--muted); font-size: 15px; }
+footer b { color: var(--fg); }
+
+@media (max-width: 480px) {
+  body { font-size: 16px; padding: 0 16px; }
+  .step { grid-template-columns: 1fr; gap: 6px; }
+  .step::before { padding-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .log-head .rec::before { animation: none; } }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+
+  <header class="hero">
+    <span class="label">@matheuskraupp · passo a passo</span>
+    <h1>A IA edita, <em>você dirige</em>.</h1>
+    <p class="lede">No meu vídeo eu pedi a edição falando, só pra mostrar até onde o <strong>Claude Code</strong> já chega. No seu, você vai pedir por escrito. Aqui está como montar a estrutura no seu computador e, principalmente, <strong>o que dizer pro Claude</strong> pra ele editar do jeito que você quer.</p>
+
+    <div class="log" aria-label="O que foi feito no meu vídeo de demonstração">
+      <div class="log-head"><span class="rec">o que rolou no meu vídeo</span><span>pedido → efeito</span></div>
+      <ol>
+        <li><span class="t">08,2s</span><span class="said">"tá sendo editado pelo que eu tô falando"</span><span class="did">waveform da voz escreve EDITADO na tela</span></li>
+        <li><span class="t">19,4s</span><span class="said">"o símbolo do Claude Code na minha mão esquerda"</span><span class="did">logo 3D rastreado na palma</span></li>
+        <li><span class="t">36,1s</span><span class="said">"jogar de uma mão pra outra"</span><span class="did">logos trocam de mão em arco</span></li>
+        <li><span class="t">54,3s</span><span class="said">"separe o meu vídeo em uma forma 3D"</span><span class="did">cena explode em camadas de profundidade</span></li>
+      </ol>
+    </div>
+  </header>
+
+  <section class="stack" aria-labelledby="como">
+    <h2 id="como">Como funciona, em uma frase</h2>
+    <p class="intro">Você grava seu vídeo normalmente e escreve um pedido de edição, como faria pra um editor humano. O Claude Code transcreve o vídeo com o tempo exato de cada palavra, monta a edição em código (com uma ferramenta gratuita chamada HyperFrames), te mostra uma prévia e renderiza o MP4. Você não escreve código nenhum, só conversa.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="precisa">
+    <h2 id="precisa">O que você precisa</h2>
+    <ul class="need">
+      <li><b>Um computador</b><span>Mac ou Windows. Celular não roda o Claude Code.</span></li>
+      <li><b>Plano pago do Claude</b><span>Pro já funciona. Pra editar muito vídeo, o Max dura mais.</span></li>
+      <li><b>Um vídeo gravado</b><span>Selfie falada, câmera parada, boa luz. Pode ser do celular.</span></li>
+      <li><b>Uns 30 minutos</b><span>Só na primeira vez, pra instalar tudo.</span></li>
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="passos">
+    <h2 id="passos">Passo a passo</h2>
+    <ol class="steps">
+
+      <li class="step"><div class="step-body">
+        <h3>Instale o Claude Code</h3>
+        <p>O jeito mais fácil é baixar o <strong>app do Claude</strong> em <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>, entrar com sua conta e abrir a aba <strong>Code</strong>. Se preferir o terminal, use o comando do seu sistema:</p>
+        <div class="os">
+          <div class="code">
+            <div class="code-head"><span class="label">Mac · Terminal</span><button class="copy" type="button">copiar</button></div>
+            <pre>curl -fsSL https://claude.ai/install.sh | bash</pre>
+          </div>
+          <div class="code">
+            <div class="code-head"><span class="label">Windows · PowerShell</span><button class="copy" type="button">copiar</button></div>
+            <pre>irm https://claude.ai/install.ps1 | iex</pre>
+          </div>
+        </div>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Crie uma pasta pro projeto e coloque o vídeo nela</h3>
+        <p>Algo como <strong>Documentos/edicao-ia</strong>. Jogue o vídeo bruto lá dentro e abra o Claude Code <strong>dentro dessa pasta</strong> (no app, é só escolher a pasta ao iniciar a sessão; no terminal, entre nela e digite <code>claude</code>). Tudo que ele criar vai ficar ali.</p>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Peça pro próprio Claude instalar as ferramentas</h3>
+        <p>A edição precisa de três coisas: <strong>Node.js</strong>, <strong>FFmpeg</strong> (processa vídeo) e as skills do <strong>HyperFrames</strong> (o motor de motion da HeyGen, gratuito e open source). Em vez de instalar na mão, cole este pedido no Claude Code e vá aprovando o que ele pedir:</p>
+        <div class="code prompt">
+          <div class="code-head"><span class="label">prompt de instalação</span><button class="copy" type="button">copiar</button></div>
+          <pre class="wrap-text">Quero editar vídeos com você usando HyperFrames. Prepare meu computador:
+
+1. Verifique se tenho Node.js (versão 22 ou mais nova) e FFmpeg. Se faltar algum, instale pra mim do jeito certo pro meu sistema e me explique cada passo antes de rodar.
+2. Instale as skills do HyperFrames neste projeto com: npx skills add heygen-com/hyperframes
+3. Confirme no final que está tudo funcionando, rodando um teste rápido que gere um vídeo de 3 segundos.
+
+Fale comigo em português e de forma simples, eu não sou programador.</pre>
+        </div>
+        <p>Se quiser fazer na mão: no Mac, <code>brew install node ffmpeg</code>. No Windows, <code>winget install OpenJS.NodeJS.LTS</code> e <code>winget install Gyan.FFmpeg</code>. Depois, <code>npx skills add heygen-com/hyperframes</code> dentro da pasta.</p>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Grave seu vídeo do jeito de sempre</h3>
+        <p>Não precisa mudar nada no seu jeito de gravar. Só alguns cuidados ajudam a IA a entregar um resultado melhor:</p>
+        <ul class="tips">
+          <li><strong>Câmera parada.</strong> Tripé ou celular apoiado. Imagem tremendo atrapalha qualquer efeito que precise seguir você.</li>
+          <li><strong>Áudio limpo.</strong> A transcrição é a base de tudo. Microfone de lapela ou ambiente silencioso faz diferença.</li>
+          <li><strong>Gestos claros nos momentos-chave.</strong> Se você quer algo aparecendo na mão ou do seu lado, deixe espaço no quadro e segure o gesto por 2 ou 3 segundos.</li>
+          <li><strong>Fundo com profundidade.</strong> Você, móveis e parede em distâncias diferentes deixam os efeitos 3D muito mais bonitos.</li>
+        </ul>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Escreva o pedido de edição</h3>
+        <p>É aqui que o resultado é decidido. Use os <a href="#pedido">8 pontos do pedido</a> logo abaixo e o modelo pronto pra preencher. Cole no Claude Code com o nome do seu arquivo.</p>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Revise os frames e peça ajustes</h3>
+        <p>Ele vai te mostrar o plano de edição e depois os frames de preview. Corrija como se falasse com um editor: <strong>"o logo tá muito grande"</strong>, <strong>"o efeito do segundo 27 tá atrasado"</strong>, <strong>"deixa a legenda maior"</strong>. Pra ver a edição tocando, peça: <em>"abre o preview do HyperFrames no navegador"</em>.</p>
+      </div></li>
+
+      <li class="step"><div class="step-body">
+        <h3>Renderize e poste</h3>
+        <p>Quando estiver bom, diga <strong>"pode renderizar o final"</strong>. O MP4 sai na própria pasta do projeto. Na próxima vez, você pula os passos 1 a 3: é só criar uma pasta nova, colocar o vídeo e mandar o prompt.</p>
+      </div></li>
+
+    </ol>
+  </section>
+
+  <section class="stack" aria-labelledby="pedido">
+    <h2 id="pedido">Os 8 pontos de um bom pedido de edição</h2>
+    <p class="intro">O Claude edita bem quando entende o que você quer. Pedido vago ("deixa o vídeo bonito") gera edição genérica. Pense como se estivesse passando um briefing pra um editor que nunca te viu.</p>
+    <ol class="points">
+      <li><b>Objetivo e plataforma</b><span>Pra onde vai e o que o vídeo precisa causar. <em>"Reels de 60s pra vender minha mentoria, o público precisa entender a oferta até o fim."</em></span></li>
+      <li><b>Formato técnico</b><span>Proporção, resolução e duração. <em>"Vertical 1080x1920, 30fps, no máximo 60 segundos."</em></span></li>
+      <li><b>Ritmo e cortes</b><span>O que pode sair e quão rápido deve ser. <em>"Corte silêncios e gaguejadas, ritmo acelerado, zoom leve a cada troca de ideia."</em></span></li>
+      <li><b>Legenda</b><span>Estilo, posição e destaque. <em>"Palavra a palavra, branca, bold, centro-baixo, palavra ativa em amarelo."</em> Mandar um print de referência ajuda muito.</span></li>
+      <li><b>Identidade visual</b><span>Suas cores, fontes e logo. Coloque o logo na pasta e passe os códigos das cores. <em>"Preto, branco e laranja #FF6A00, fonte Montserrat."</em></span></li>
+      <li><b>O que aparece em cada momento</b><span>Os elementos ligados à fala. <em>"Quando eu falar 'três passos', aparece uma lista animada. Quando eu falar o preço, ele surge grande do meu lado."</em> Se não souber o que pedir, peça pro Claude sugerir.</span></li>
+      <li><b>Referências e o que evitar</b><span>Um criador, um filme ou um vídeo que tenha o estilo que você quer, e o que você não quer. <em>"Estilo clean tipo anúncio da Apple. Nada de emoji, transição de PowerPoint ou cara de template."</em></span></li>
+      <li><b>Áudio</b><span>Música e efeitos sonoros. <em>"Sem música, só whoosh curto nas transições, sempre mais baixo que minha voz."</em> Se tiver uma trilha, coloque o arquivo na pasta.</span></li>
+    </ol>
+    <p class="intro">E sempre feche com o processo: <strong style="color:var(--fg);font-weight:500">transcrever primeiro, mostrar o plano, mostrar a prévia, e só renderizar depois do seu OK</strong>. Isso evita gastar limite numa edição inteira que não era o que você queria.</p>
+
+    <div class="code prompt">
+      <div class="code-head"><span class="label">modelo pra preencher</span><button class="copy" type="button">copiar</button></div>
+      <pre class="wrap-text">Você é um editor de vídeo e motion graphics exigente. Edite o vídeo "[NOME-DO-ARQUIVO].mp4" que está nesta pasta usando HyperFrames.
+
+1. OBJETIVO: [pra onde vai e o que o vídeo precisa causar]
+2. FORMATO: [vertical 1080x1920 / horizontal 1920x1080], 30fps, duração máxima [X] segundos. Áudio original preservado.
+3. RITMO E CORTES: [ex: corte silêncios e gaguejadas, ritmo acelerado, zoom leve a cada troca de ideia]. Não mude a ordem das frases.
+4. LEGENDA: [estilo, cor, posição, destaque da palavra ativa]
+5. IDENTIDADE VISUAL: cores [códigos], fonte [nome], logo no arquivo [nome do arquivo, se tiver]
+6. MOMENTOS:
+   - Quando eu falar "[trecho]": [o que aparece]
+   - Quando eu falar "[trecho]": [o que aparece]
+   - Nos outros momentos, sugira elementos que reforcem o que estou dizendo.
+7. REFERÊNCIAS: [estilo, criador ou vídeo de referência]. EVITAR: [o que você não quer]
+8. ÁUDIO: [música, efeitos sonoros, volume em relação à voz]
+
+PROCESSO:
+- Primeiro transcreva o vídeo com o tempo de cada palavra.
+- Depois me mostre o plano de edição em uma tabela (segundo, o que eu falo, o que aparece na tela) e espere meu OK.
+- Antes do render final, gere uma prévia e me mostre 5 frames dos momentos principais.
+- Só renderize o MP4 final depois da minha aprovação.
+
+Fale comigo em português e de forma simples.</pre>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="ideias">
+    <h2 id="ideias">Não sabe o que pedir? Peça pro Claude sugerir</h2>
+    <p class="intro">Você não precisa chegar com a edição pronta na cabeça. Mande primeiro só a transcrição e deixe ele propor. Depois é só aprovar, cortar ou trocar o que não gostou.</p>
+    <div class="code prompt">
+      <div class="code-head"><span class="label">prompt de sugestão</span><button class="copy" type="button">copiar</button></div>
+      <pre class="wrap-text">Transcreva o vídeo "[NOME-DO-ARQUIVO].mp4" com o tempo de cada palavra. Depois, agindo como um editor de Reels que entende de retenção, me sugira um plano de edição segundo a segundo: o gancho dos primeiros 3 segundos, onde cortar, que elementos visuais aparecem em cada momento pra reforçar o que estou falando, e o estilo de legenda. Me dê 2 direções diferentes (uma mais limpa e uma mais intensa) e espere eu escolher antes de editar.</pre>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="nivel">
+    <h2 id="nivel">Pra chegar no nível dos efeitos 3D</h2>
+    <p class="intro">Os efeitos do meu vídeo (logos nas mãos, explosão em camadas) usam técnicas de VFX de cinema. Você não precisa saber nenhuma delas, mas precisa <strong style="color:var(--fg);font-weight:500">pedir por nome</strong>, senão a IA entrega algo mais simples. Acrescente ao prompt o que fizer sentido pro seu vídeo:</p>
+    <ul class="tips">
+      <li><strong>Objeto na mão:</strong> "rastreie minhas mãos com MediaPipe Hands, suavize com filtro One Euro e faça o objeto flutuar 3 cm acima da palma, com sombra na pele".</li>
+      <li><strong>Separar em camadas 3D:</strong> "gere um mapa de profundidade com Depth Anything V2, separe fundo, meio e eu, e orbite a câmera 35 graus mostrando as camadas no espaço".</li>
+      <li><strong>Elemento passando atrás de você:</strong> "recorte minha silhueta frame a frame (segmentação de pessoa) e componha o elemento atrás de mim nesse trecho".</li>
+      <li><strong>Parecer filme e menos app:</strong> "aplique grão igual ao do vídeo original, motion blur real, light wrap nas bordas e um color grade único em tudo".</li>
+      <li><strong>Referência visual:</strong> cite filmes. "Holograma no estilo do laboratório do Tony Stark em Homem de Ferro 2" diz mais que um parágrafo de descrição.</li>
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="duvidas">
+    <h2 id="duvidas">Dúvidas comuns</h2>
+    <div class="faq">
+      <details>
+        <summary>Preciso saber programar?</summary>
+        <p>Não. O Claude escreve e roda todo o código. Você só aprova os comandos que ele pede pra executar e dá feedback no resultado.</p>
+      </details>
+      <details>
+        <summary>Quanto custa?</summary>
+        <p>O HyperFrames e as ferramentas de rastreio são gratuitos. O custo é a assinatura do Claude. Edição de vídeo consome bastante do limite, então no plano Pro talvez você precise esperar o limite renovar entre um vídeo e outro.</p>
+      </details>
+      <details>
+        <summary>Sai perfeito na primeira tentativa?</summary>
+        <p>Raramente. Conte com 3 a 5 rodadas de ajuste no primeiro vídeo. Por isso o prompt pede preview antes do render: você corrige o rumo cedo e gasta menos.</p>
+      </details>
+      <details>
+        <summary>Funciona com vídeo horizontal ou em inglês?</summary>
+        <p>Funciona. Troque o formato de saída no prompt (1920x1080) e o idioma da transcrição se precisar.</p>
+      </details>
+      <details>
+        <summary>Posso usar o Remotion em vez do HyperFrames?</summary>
+        <p>Pode. O Remotion é outra ferramenta de vídeo em código que o Claude também domina. Instale com <code>npx skills add remotion-dev/skills</code> e troque "HyperFrames" por "Remotion" no prompt.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Testou?</b> Me marca no resultado em <a href="https://instagram.com/matheuskraupp" target="_blank" rel="noopener">@matheuskraupp</a>. Quero ver o que você criou.</p>
+    <p>Repositório do HyperFrames: <a href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noopener">github.com/heygen-com/hyperframes</a></p>
+  </footer>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = btn.closest('.code').querySelector('pre');
+    var done = function () {
+      btn.textContent = 'copiado'; btn.classList.add('ok');
+      setTimeout(function () { btn.textContent = 'copiar'; btn.classList.remove('ok'); }, 1600);
+    };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'selecionado';
+    };
+    try { navigator.clipboard.writeText(pre.innerText).then(done, select); } catch (e) { select(); }
+  });
+});
+</script>
+</body>
+</html>
